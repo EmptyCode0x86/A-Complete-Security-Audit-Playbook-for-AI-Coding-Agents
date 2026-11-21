@@ -1,0 +1,5 @@
+---
+description: Security audit sessions (OffCode playbook). Use when running, continuing, fixing, re-verifying, or reporting on the security audit.
+alwaysApply: false
+---
+For any security audit work, follow AGENTS.md in the repository root. Do not read docs/security-audit/SECURITY_AUDIT_FULL.md (or its identical root copy) unless the prompt explicitly asks for the single-file route; read docs/security/AUDIT_PROGRESS.md, docs/security/FINDINGS.md, and only the current session file in docs/security-audit/sessions/.
