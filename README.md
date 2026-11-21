@@ -8,12 +8,52 @@ This is a phased, evidence-based security and privacy audit for your own softwar
 
 It is for developers, reviewers, and teams who need a production-readiness assessment they can defend, not a one-shot prompt that pretends to cover everything.
 
+## How this package works (quick start)
+
+This playbook comes in two forms with the same audit text:
+
+-   **Single file:** this document, installed as `docs/security-audit/SECURITY_AUDIT_FULL.md`. Use it to read the whole playbook, or to run the classic prompts below, which refer to that path.
+-   **Modular package (recommended for agents):** `docs/security-audit/` splits the playbook into one module per session, so an agent reads only what one session needs. `AGENTS.md` in the repository root tells the agent which file to read.
+
+Folder layout:
+
+```text
+<repository root>/
+  AGENTS.md, CLAUDE.md, .cursor/rules/security-audit.mdc
+  README_MODULAR.md, OffCode Security Audit for ai agents.md (this document)
+  docs/security-audit/
+    SECURITY_AUDIT.md        master: session plan, core rules, links
+    SECURITY_AUDIT_FULL.md   single-file playbook (identical to this document)
+    sessions/                session-01 ... session-12, remediation
+    prompts/                 one prompt per session + remediation, reverify, continue
+    reference/  templates/
+  docs/security/             audit outputs (created in session 01)
+```
+
+1.  **Install:** copy the delivery folder's contents, including `.cursor`, into the repository root.
+2.  **Run:** one new conversation per session. Paste `docs/security-audit/prompts/session-01.md`, then `session-02.md` ... `session-12.md` (the final report), and commit after each.
+3.  **Fix:** after the audit, run `prompts/remediation.md` once per finding, then `prompts/reverify.md` in a separate session. Use `prompts/continue.md` if the context runs out.
+4.  **Outputs:** `docs/security/AUDIT_PROGRESS.md`, `FINDINGS.md`, `phase-NN-*.md`, `reverify-*.md`, and `FINAL_REPORT.md`.
+
+Example prompt (the full versions are in `prompts/`):
+
+```text
+Run session 02 (Architecture and threat model) of the security audit.
+Read only AGENTS.md, docs/security/AUDIT_PROGRESS.md, docs/security/FINDINGS.md
+and docs/security-audit/sessions/session-02-architecture.md. Read-only; evidence file:line.
+Write docs/security/phase-02-architecture.md, update the progress file, then stop.
+```
+
+`OffCode Security Audit for ai agents.md` in the repository root and `docs/security-audit/SECURITY_AUDIT_FULL.md` are identical copies of this document. See `README_MODULAR.md` in the repository root for details.
+
+
 ## Quick jump
 
 Jump straight to a topic. The full contents follow below.
 
 | Topic | Go to |
 | --- | --- |
+| Quick start | [How this package works (quick start)](#how-this-package-works-quick-start) |
 | API | [5. Stage 2: Audit of All Public Interfaces](#5-stage-2-audit-of-all-public-interfaces); [5b. Stage 2b: API-Specific Risks](#5b-stage-2b-api-specific-risks) |
 | Authentication | [6. Stage 3: Authentication, Identity, and Session Lifecycle](#6-stage-3-authentication-identity-and-session-lifecycle); [6b. Stage 3b: Multi-Factor Authentication and Passkeys](#6b-stage-3b-multi-factor-authentication-and-passkeys) |
 | AI / LLM | [9c. Stage 6c: Artificial Intelligence, LLMs, and Agents](#9c-stage-6c-artificial-intelligence-llms-and-agents) |
@@ -28,6 +68,7 @@ Jump straight to a topic. The full contents follow below.
 
 ### Getting started and prompts
 
+- [How this package works (quick start)](#how-this-package-works-quick-start)
 - [What it covers](#what-it-covers)
 - [How to use it](#how-to-use-it)
 - [Recommended session split (about 10-12 sessions)](#recommended-session-split-about-10-12-sessions)
@@ -125,38 +166,41 @@ Jump straight to a topic. The full contents follow below.
 
 ## How to use it
 
-1.  Copy this playbook into the project, for example as `docs/SECURITY_AUDIT.md`.
-2.  Run each session in a new conversation with fresh context. Use one stage, or a few closely related stages, per session. Collect every finding in `docs/security/FINDINGS.md`, write a short session report to `docs/security/phase-<stage>.md`, and keep progress in `docs/security/AUDIT_PROGRESS.md`.
+1.  Install the package as described in the quick start above. This playbook is then in the project as `docs/security-audit/SECURITY_AUDIT_FULL.md`, and the classic prompts below refer to that file. For agents, the modular route is recommended: `AGENTS.md` and the prompts in `docs/security-audit/prompts/` run the same sessions with much less context.
+2.  Run each session in a new conversation with fresh context. Use one stage, or a few closely related stages, per session. Collect every finding in `docs/security/FINDINGS.md`, write a short session report to `docs/security/phase-NN-<name>.md` (for example `phase-02-architecture.md`), and keep progress in `docs/security/AUDIT_PROGRESS.md`.
 3.  Audit first in read-only mode. Only after the audit, fix issues in their own sessions: one finding at a time, including tests.
 4.  Skip stages the project does not have (for example 6c if there is no AI, or 10b if there is no cloud), but record them as NOT APPLICABLE with a rationale.
 5.  Make a commit after each session, and review the changes yourself.
 
 ## Recommended session split (about 10-12 sessions)
 
-| # | Session | Document sections |
-| --- | --- | --- |
-| 1 | Kickoff and scoping | Project description, 1, 2, Appendix A (ASVS level), N/A decisions |
-| 2 | Architecture and threat model | 4 (Stage 1), 4b (Stage 1b STRIDE) |
-| 3 | Interfaces | 5 (Stage 2), 5b (Stage 2b API) |
-| 4 | Identity | 6 (Stage 3), 6b (Stage 3b MFA) |
-| 5 | Data and privacy | 7 (Stage 4), 8 (Stage 5), 12 (Stage 9 files) |
-| 6 | Client, desktop, and AI | 9 (Stage 6), 9b (6b), 9c (6c) |
-| 7 | Network and cryptography | 10 (Stage 7), 10b (7b), 11 (Stage 8), 11b (8b) |
-| 8 | Infra and CI/CD | 13 (Stage 10), 13b (10b), 13c (10c) |
-| 9 | Supply chain and failure modes | 14 (Stage 11), 14b (11b), 14c (11c) |
-| 10 | Testing | 15 (Stage 12), 15b (12b) |
-| 11 | Operations and process | 16b-16e (Stages 14-17) |
-| 12 | Final report | 17 (A-U), 18, Appendix A checklist |
+| # | Session | Document sections | `<NN>-<name>` |
+| --- | --- | --- | --- |
+| 1 | Kickoff and scoping | Project description, 1, 2, Appendix A (ASVS level), N/A decisions | `01-kickoff` |
+| 2 | Architecture and threat model | 4 (Stage 1), 4b (Stage 1b STRIDE) | `02-architecture` |
+| 3 | Interfaces | 5 (Stage 2), 5b (Stage 2b API) | `03-interfaces` |
+| 4 | Identity | 6 (Stage 3), 6b (Stage 3b MFA) | `04-identity` |
+| 5 | Data and privacy | 7 (Stage 4), 8 (Stage 5), 12 (Stage 9 files) | `05-data-privacy` |
+| 6 | Client, desktop, and AI | 9 (Stage 6), 9b (6b), 9c (6c) | `06-client-desktop-ai` |
+| 7 | Network and cryptography | 10 (Stage 7), 10b (7b), 11 (Stage 8), 11b (8b) | `07-network-crypto` |
+| 8 | Infra and CI/CD | 13 (Stage 10), 13b (10b), 13c (10c) | `08-infra-cicd` |
+| 9 | Supply chain and failure modes | 14 (Stage 11), 14b (11b), 14c (11c) | `09-supply-chain` |
+| 10 | Testing | 15 (Stage 12), 15b (12b) | `10-testing` |
+| 11 | Operations and process | 16b-16e (Stages 14-17) | `11-operations` |
+| 12 | Final report | 17 (A-U), 18, Appendix A checklist | `12-final-report` |
+
+For each session, `<NN>-<name>` gives the session report `docs/security/phase-<NN>-<name>.md` (session 12 writes `FINAL_REPORT.md` instead), the module `docs/security-audit/sessions/session-<NN>-<name>.md`, and the modular prompt `docs/security-audit/prompts/session-<NN>.md`.
 
 Remediation sessions (Stage 13, section 16) are done after the audit, one
-finding at a time, starting with the most severe. In a small project, sessions
-may be combined; in a large one, a single stage may be split into parts.
+finding at a time, starting with the most severe (modular route:
+`docs/security-audit/sessions/remediation.md` and `prompts/remediation.md`). In a small project,
+sessions may be combined; in a large one, a single stage may be split into parts.
 
 ## Prompt 0: Kickoff and scoping
 
 ```text
-Read docs/SECURITY_AUDIT.md in full and follow its rules (section 3,
-including Rule 7). Do not change code in this session.
+Read docs/security-audit/SECURITY_AUDIT_FULL.md in full and follow its
+rules (section 3, including Rule 7). Do not change code in this session.
 
 1. Map the repository structure and fill in the sections "Project description" and
    "1. Technologies and implementation" based on the actual implementation.
@@ -165,18 +209,19 @@ including Rule 7). Do not change code in this session.
 3. Decide which stages are NOT APPLICABLE, and justify.
 4. Create docs/security/FINDINGS.md (section 16 finding structure, empty
    register table), docs/security/AUDIT_PROGRESS.md (session plan,
-   status per stage), and docs/security/phase-0.md (this session's result).
+   status per stage), both from docs/security-audit/templates/, and
+   docs/security/phase-01-kickoff.md (this session's result).
 5. Stop and summarize: technologies, selected level, N/A stages,
    next session. Do not start the next stage.
 ```
 
 ## Stage audit template
 
-Replace `<STAGE>` with e.g. the text `4 and 4b (Stage 1 and 1b)`.
+Replace `<STAGE>` with e.g. the text `4 and 4b (Stage 1 and 1b)`, and `<NN>-<name>` with the session's value from the session split, e.g. `02-architecture`.
 
 ```text
-Audit the sections <STAGE> of docs/SECURITY_AUDIT.md. First read
-docs/security/AUDIT_PROGRESS.md and docs/security/FINDINGS.md.
+Audit the sections <STAGE> of docs/security-audit/SECURITY_AUDIT_FULL.md.
+First read docs/security/AUDIT_PROGRESS.md and docs/security/FINDINGS.md.
 
 Rules:
 - Read-only: do not change source code or configuration.
@@ -190,7 +235,7 @@ Rules:
 Results:
 - Add new findings to FINDINGS.md with sequential identifiers
   (SEC-001, SEC-002, ...) using the section 16 field structure, status OPEN.
-- Write docs/security/phase-<STAGE>.md: scope examined,
+- Write docs/security/phase-<NN>-<name>.md: scope examined,
   what was left unexamined, findings, NOT VERIFIED items.
 - Update AUDIT_PROGRESS.md.
 
@@ -202,7 +247,8 @@ Do not start the next stage.
 
 ```text
 Fix finding <SEC-ID> from docs/security/FINDINGS.md, following
-rules 3, 4, and 5 of docs/SECURITY_AUDIT.md as well as section 16.
+rules 3, 4, and 5 of docs/security-audit/SECURITY_AUDIT_FULL.md as well as
+section 16.
 
 - Read the finding and the related code. First confirm that the issue is
   real. If it is not, record the rationale and do not change the code.
@@ -231,7 +277,8 @@ and update FINDINGS.md.
 ## Final report
 
 ```text
-Compile the section 17 final report of docs/SECURITY_AUDIT.md (sections A-U)
+Compile the section 17 final report of docs/security-audit/SECURITY_AUDIT_FULL.md
+(sections A-U)
 into the file docs/security/FINAL_REPORT.md using only FINDINGS.md,
 phase-*.md files, reverify reports, and AUDIT_PROGRESS.md.
 Do not add new findings without evidence.
@@ -247,7 +294,8 @@ do not choose APPROVED.
 
 ```text
 Continue the security audit. Read docs/security/AUDIT_PROGRESS.md and
-docs/security/FINDINGS.md as well as the phase file of the unfinished stage.
+docs/security/FINDINGS.md as well as the phase file of the unfinished stage
+(docs/security/phase-<NN>-<name>.md).
 Continue from where work left off, following the rules of the same stage. Do not repeat
 completed work and do not start a new stage.
 ```
